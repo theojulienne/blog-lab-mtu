@@ -26,6 +26,9 @@ services:
         ipv4_address: 172.29.0.20
       router_a_b:
         ipv4_address: 172.30.0.20
+    extra_hosts:
+      - "server:172.31.0.40"
+      - "client:172.29.0.10"
   router-b:
     build: .
     privileged: true
@@ -37,6 +40,9 @@ services:
         ipv4_address: 172.30.0.30
       router_b_server:
         ipv4_address: 172.31.0.30
+    extra_hosts:
+      - "server:172.31.0.40"
+      - "client:172.29.0.10"
   server:
     build: .
     privileged: true
