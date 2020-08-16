@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -e
+
+cd /vagrant
+docker-compose exec $1 /bin/bash

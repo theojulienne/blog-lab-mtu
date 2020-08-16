@@ -1,0 +1,9 @@
+#!/bin/bash
+
+cd /vagrant
+
+for h in client router-a router-b server; do
+    docker-compose exec $h ip route flush cache
+done
+
+echo "Flushed route caches."

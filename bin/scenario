@@ -1,0 +1,68 @@
+#!/bin/bash
+
+MTU_SETTING="${1:-default}"
+
+set_mtu () {
+    local host="$1"
+    local eth="$2"
+    local mtu="$3"
+
+    (
+        cd /vagrant
+        docker-compose exec "$host" /usr/bin/set-iface-mtu "$eth" "$mtu"
+    )
+}
+
+case $MTU_SETTING in
+default)
+    set_mtu client 172.28.0 1500
+    set_mtu server 172.28.0 1500
+
+    set_mtu client 172.29.0 9000
+    set_mtu router-a 172.29.0 9000
+
+    set_mtu router-a 172.30.0 9000
+    set_mtu router-b 172.30.0 9000
+
+    set_mtu router-b 172.31.0 9000
+    set_mtu server 172.31.0 9000
+    ;;
+direct_1500)
+    # simple example with client->server direct connect on 172.28.0.0/24
+    set_mtu client 172.28.0 1500
+    set_mtu server 172.28.0 1500
+    ;;
+direct_mismatch)
+    # simple example with client->server direct connect on 172.28.0.0/24
+    set_mtu client 172.28.0 1200
+    set_mtu server 172.28.0 1500
+    ;;
+client_net_smaller)
+    # simple example where the path is all correct, but MTUs are different
+    set_mtu client 172.29.0 1500
+    set_mtu router-a 172.29.0 1500
+
+    set_mtu router-a 172.30.0 9000
+    set_mtu router-b 172.30.0 9000
+
+    set_mtu router-b 172.31.0 9000
+    set_mtu server 172.31.0 9000
+    ;;
+hidden_smaller)
+    # simple example where an intermediary hop has a smaller MTU, not visible in MSS
+    set_mtu client 172.29.0 1500
+    set_mtu router-a 172.29.0 1500
+
+    set_mtu router-a 172.30.0 1200
+    set_mtu router-b 172.30.0 1200
+
+    set_mtu router-b 172.31.0 9000
+    set_mtu server 172.31.0 9000
+    ;;
+*)
+    echo "Unknown configuration state: $MTU_SETTING"
+    exit 1
+    ;;
+esac
+
+/vagrant/bin/flush-all-route-caches

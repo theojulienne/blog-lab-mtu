@@ -1,0 +1,89 @@
+version: "3"
+services:
+
+  client:
+    build: .
+    privileged: true
+    hostname: client
+    volumes:
+      - ./bird/bird-client.conf:/etc/bird/bird.conf
+    networks:
+      client_server_direct:
+        ipv4_address: 172.28.0.10
+      client_router_a:
+        ipv4_address: 172.29.0.10
+    extra_hosts:
+      - "server-direct:172.28.0.40"
+      - "server:172.31.0.40"
+  router-a:
+    build: .
+    privileged: true
+    hostname: router-a
+    volumes:
+      - ./bird/bird-router-a.conf:/etc/bird/bird.conf
+    networks:
+      client_router_a:
+        ipv4_address: 172.29.0.20
+      router_a_b:
+        ipv4_address: 172.30.0.20
+  router-b:
+    build: .
+    privileged: true
+    hostname: router-b
+    volumes:
+      - ./bird/bird-router-b.conf:/etc/bird/bird.conf
+    networks:
+      router_a_b:
+        ipv4_address: 172.30.0.30
+      router_b_server:
+        ipv4_address: 172.31.0.30
+  server:
+    build: .
+    privileged: true
+    hostname: server
+    volumes:
+      - ./bird/bird-server.conf:/etc/bird/bird.conf
+    networks:
+      client_server_direct:
+        ipv4_address: 172.28.0.40
+      router_b_server:
+        ipv4_address: 172.31.0.40
+    extra_hosts:
+      - "client-direct:172.28.0.10"
+      - "client:172.29.0.10"
+
+networks:
+  client_server_direct:
+    driver: bridge
+    internal: true
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
+  client_router_a:
+    driver: bridge
+    internal: true
+    driver_opts:
+      com.docker.network.driver.mtu: 9000
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.29.0.0/16
+  router_a_b:
+    driver: bridge
+    internal: true
+    driver_opts:
+      com.docker.network.driver.mtu: 9000
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.30.0.0/16
+  router_b_server:
+    driver: bridge
+    internal: true
+    driver_opts:
+      com.docker.network.driver.mtu: 9000
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.31.0.0/16

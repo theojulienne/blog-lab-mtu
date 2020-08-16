@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -e
+
+eth="$1"
+mtu="$2"
+
+eth=$(ip --brief addr show | grep $eth | cut -d' ' -f1 | cut -d'@' -f1)
+
+if ip link show $eth >/dev/null 2>&1; then
+    ip link set $eth mtu $mtu
+    echo "$(hostname): Changing MTU of $eth to $mtu"
+
+    # also disable these features that make it hard to see the underlying packets
+    ethtool -K $eth gso off tso off gro off
+fi
