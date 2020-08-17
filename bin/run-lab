@@ -2,8 +2,8 @@
 
 set -e
 
-sudo iptables -D FORWARD -s 172.16.0.0/12 -d 172.16.0.0/12 -j ACCEPT >/dev/null 2>&1 || true
-sudo iptables -I FORWARD -s 172.16.0.0/12 -d 172.16.0.0/12 -j ACCEPT
+sudo iptables -D DOCKER-USER -s 172.16.0.0/12 -d 172.16.0.0/12 -j ACCEPT >/dev/null 2>&1 || true
+sudo iptables -I DOCKER-USER -s 172.16.0.0/12 -d 172.16.0.0/12 -j ACCEPT
 
 cd /vagrant
 docker-compose up
